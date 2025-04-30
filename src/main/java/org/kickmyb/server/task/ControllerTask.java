@@ -37,7 +37,12 @@ public class ControllerTask {
     public @ResponseBody String updateProgress(@PathVariable long taskID, @PathVariable int value) {
         System.out.println("KICKB SERVER : Progress for task : " + taskID + " @" + value);
         ConfigHTTP.attenteArticifielle();
-        serviceTask.updateProgress(taskID, value);
+
+        // Récupère l'utilisateur courant
+        MUser user = currentUser(); // Nécessaire pour le contrôle d'accès, pour vérifier que l'utilisateur a le droit
+                                    // de modifier la tâche
+
+        serviceTask.updateProgress(taskID, value, user);
         return "";
     }
 
@@ -55,6 +60,16 @@ public class ControllerTask {
         ConfigHTTP.attenteArticifielle();
         MUser user = currentUser();
         return serviceTask.detail(id, user);
+    }
+
+    @DeleteMapping(value = "/api/delete/{id}", produces = "text/plain")
+    public @ResponseBody String delete(@PathVariable long id) throws ServiceTask.TaskNotFound, ServiceTask.TaskNotOwnedByUser {
+        System.out.println("KICKB SERVER : Delete task " + id);
+        ConfigHTTP.attenteArticifielle();
+        // Récupère l'utilisateur courant
+        MUser user = currentUser(); // Nécessaire pour le contrôle d'accès, pour vérifier que l'utilisateur a le droit de supprimer
+        serviceTask.delete(id, user);
+        return "";
     }
 
     /**

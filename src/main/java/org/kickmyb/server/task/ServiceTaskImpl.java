@@ -79,8 +79,9 @@ public class ServiceTaskImpl implements ServiceTask {
     }
 
     @Override
-    public void updateProgress(long taskID, int value) {
-        MTask element = repo.findById(taskID).get();
+    public void updateProgress(long taskID, int value, MUser user) {
+        //MTask element = repo.findById(taskID).get();
+        MTask element = user.tasks.stream().filter(elt -> elt.id == taskID).findFirst().get();
         // TODO validate value is between 0 and 100
         MProgressEvent pe= new MProgressEvent();
         pe.resultPercentage = value;
@@ -117,7 +118,7 @@ public class ServiceTaskImpl implements ServiceTask {
         String res = "<html>";
         res += "<div>Index :</div>";
         for (MUser u: repoUser.findAll()) {
-            res += "<div>" + u.username  ;
+            res += "<div>" + u.username ;
             for (MTask t : u.tasks) {
                 res += "<div>" + t.name  + "</div>";
             }
@@ -151,6 +152,32 @@ public class ServiceTaskImpl implements ServiceTask {
             res.add(r);
         }
         return res;
+    }
+
+    @Override
+    public void delete(long id, MUser user) throws TaskNotFound, TaskNotOwnedByUser {
+
+        // S'assurer que la tâche existe
+        if (!repo.existsById(id)){
+            throw new TaskNotFound();
+        } else {
+
+            try {
+                // Enlever la tâche de la liste des tâches de l'utilisateur
+                user.tasks.removeIf(t -> t.id == id);
+
+                // Supprimer la tâche de la base de données
+                repo.deleteById(id);
+
+                // Enregistrer les modifications (immédiatement)
+                repoUser.saveAndFlush(user);
+            } catch (Throwable e) {
+
+                throw new TaskNotOwnedByUser();
+                // Note: Étant donné que c'est @Transactional, si un élément du try échoue, tout est annulé.
+            }
+
+        }
     }
 
     @Override

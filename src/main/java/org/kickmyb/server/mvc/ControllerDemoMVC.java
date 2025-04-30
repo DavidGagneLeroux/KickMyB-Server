@@ -1,7 +1,10 @@
 package org.kickmyb.server.mvc;
 
+import org.kickmyb.server.exceptions.AyoyeException;
 import org.kickmyb.server.task.ServiceTask;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,5 +44,13 @@ public class ControllerDemoMVC {
     public @ResponseBody String test() {
         return "SALUT";
     }
+
+
+    //499
+    @GetMapping("/unknown")
+    public ResponseEntity<java.lang.String> unknown() {
+        return ResponseEntity.status(499).body("Ayoye");
+    }
+
 
 }
